@@ -80,7 +80,7 @@ namespace Template.AddNewItemWizard
                 {
                     projectNames.Add(project.Name);
                 }
-                if ((projectNames.Contains("Service")) && (projectNames.Contains("NUnit")))
+                if ((projectNames.Contains("ThirdPartyPlugins")))
                     return dte;
             }
             return null;
