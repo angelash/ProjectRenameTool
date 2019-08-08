@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using EnvDTE;
@@ -98,29 +99,41 @@ namespace FirstMenuCommand
             RenameClass,
         }
 
+        private HashSet<string> hasHandleFileOpen = new HashSet<string>();
+        private HashSet<string> hasHandleFileRenameClass = new HashSet<string>();
 
         private void GetProjectItems(ProjectItem item, ControlType controlType)
         {
             foreach (ProjectItem pi in item.ProjectItems)
             {
                 var path = GetFileNames(pi);
-                if (pi.Name.EndsWith(".cs") && path.Contains(@"\GameCode\GameMain\GameMain\"))
+                if (pi.Name.EndsWith(".cs") && (path.Contains(@"\GameCode\GameMain\GameMain\") || path.Contains(@"\GameCode\MogoEngine\MogoEngine\")
+                    || path.Contains(@"\GameCode\GameResource\GameResource\") || path.Contains(@"\GameCode\ACTSystem\ACTSystem\")
+                     || path.Contains(@"\GameCode\GameLoader\GameLoader\") || path.Contains(@"\GameCode\SerializableData\SerializableData\")))
                 {
                     if (controlType == ControlType.OpenFile)
                     {
-                        Window wnd = pi.Open(EnvDTE.Constants.vsViewKindPrimary);
-                        wnd.Visible = true;
-                        wnd.Activate();
+                        if(!hasHandleFileOpen.Contains(path))
+                        {
+                            Window wnd = pi.Open(EnvDTE.Constants.vsViewKindPrimary);
+                            wnd.Visible = true;
+                            wnd.Activate();
+                            hasHandleFileOpen.Add(path);
+                        }
                     }
                     else if (controlType == ControlType.RenameClass)
                     {
-                        sb += pi.Name + " files: " + path + "\n";
-                        foreach (CodeElement code in pi.FileCodeModel.CodeElements)
+                        if (!hasHandleFileRenameClass.Contains(path))
                         {
-                            GetCodeElements(code);
-                        }
+                            sb += pi.Name + " files: " + path + "\n";
+                            foreach (CodeElement code in pi.FileCodeModel.CodeElements)
+                            {
+                                GetCodeElements(code);
+                            }
 
-                        pi.Save();
+                            pi.Save();
+                            hasHandleFileRenameClass.Add(path);
+                        }
                     }
                 }
                 GetProjectItems(pi, controlType);
@@ -174,6 +187,8 @@ namespace FirstMenuCommand
         /// <param name="e">Event args.</param>
         private void MenuItemCallback(object sender, EventArgs e)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             var dte = Template.AddNewItemWizard.EnvDTEHelper.GetIntegrityServiceInstance();
 
             foreach (Project item in dte.Solution.Projects)
@@ -191,8 +206,10 @@ namespace FirstMenuCommand
                 }
             }
             var s = sb.ToString();
+            var time = sw.ElapsedMilliseconds;
             Console.WriteLine(s);
             Console.WriteLine(nameCounter);
+            Console.WriteLine(time);
 
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title = "FirstCommand";
@@ -207,120 +224,136 @@ namespace FirstMenuCommand
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
-        List<string> whiteList = new List<string>()
+        HashSet<string> whiteList = new HashSet<string>()
         {
+            //ACTSystem
+            "ACTActor",
 
-                "XBaseScrollRect",
-                "XScrollRect",
-                "ModelDragComponent",
-                "ActModelComponent",
-                "XIcon",
-                "Main",
-                "XContainer",
-                "LuaFacade",
-                "LuaGameState",
-                "LuaPreloadPathsBuilder",
-                "LuaBehaviour",
+            //GameLoader
+            "FileAccessManager",
+            "ProgressBar",
+            "SystemConfig",
+            "PlatformSdkMgr",
 
-                "LuaUIComponent",
-                "LuaUIDragable",
-                "LuaUIPointable",
-                "LuaUIPointableDragable",
-                "LuaUIPanel",
-                "LuaUIList",
-                "LuaUIComplexList",
-                "LuaUIListItem",
-                "LuaUIListDirection",
-                "LuaUIPageableList",
-                "LuaUIScrollPage",
-                "LuaUIScrollView",
-                "LuaUIToggleGroup",
-                "LuaUIToggle",
-                "LuaUIProgressBar",
-                "LuaUIScaleProgressBar",
-                "LuaUINavigationMenu",
-                "LuaUINavigationMenuItem",
-                "LuaUIParticle",
-                "LuaUIInputField",
-                "LuaUIInputFieldMesh",
-                "LuaUILinkTextMesh",
-                "LuaUIChatEmojiItem",
-                "LuaUIChatTextBlock",
-                "LuaUIVoiceDriver",
-                "LuaUIMultipleProgressBar",
-                "LuaUISlider",
-                "LuaUIRoller",
-                "LuaUIRollerItem",
-                "LuaUIRotateModel",
+            //MogoEngine
+            "Entity",
+            "EngineDriver",
+            "MogoWorld",
+            "SceneMgr",
+            "LoadSceneSetting",
 
-                "SortOrderedRenderAgent",
+            //GameMain
+            "XBaseScrollRect",
+            "XScrollRect",
+            "ModelDragComponent",
+            "ActModelComponent",
+            "XIcon",
+            "Main",
+            "XContainer",
+            "LuaFacade",
+            "LuaGameState",
+            "LuaPreloadPathsBuilder",
+            "LuaBehaviour",
 
-                "Locater",
-                "Resizer",
-                "Rotator",
-                "XArtNumber",
-                "XButtonHitArea",
-                "XInvisibleButton",
-                "XImageUpgradeFilling",
-                "XImageFilling",
-                "XImageScaleFilling",
-                "XImageScaling",
-                "XImageFloat",
-                "XImageFollow",
-                "XImageFlowLight",
-                "XImageTweenAlpha",
-                "XImageTweenColor",
-                "XGameObjectTweenPosition",
-                "XGameObjectTweenScale",
-                "XGameObjectTweenRotation",
-                "XGameObjectComplexIcon",
-                "XGameObjectTweenSizeDelta",
-                "XCanvasGroupTweenAlpha",
-                "XContainerRotator",
-                "XScreenShot",
-                "XIntroduceBoss",
-                "XIntroduceNormal",
-                "XUILine",
-                "XIconAnim",
-                "XIconAnimOnce",
-                "ActorModelComponent",
-                "EquipModelComponent",
-                "PathModelComponent",
-                "PlayerModelComponent",
-                "XSkillDragContainer",
-                "XImageChanger",
-                "XLogoImage",
-                "XHPBar",
-                "XStickControl",
+            "LuaUIComponent",
+            "LuaUIDragable",
+            "LuaUIPointable",
+            "LuaUIPointableDragable",
+            "LuaUIPanel",
+            "LuaUIList",
+            "LuaUIComplexList",
+            "LuaUIListItem",
+            "LuaUIListDirection",
+            "LuaUIPageableList",
+            "LuaUIScrollPage",
+            "LuaUIScrollView",
+            "LuaUIToggleGroup",
+            "LuaUIToggle",
+            "LuaUIProgressBar",
+            "LuaUIScaleProgressBar",
+            "LuaUINavigationMenu",
+            "LuaUINavigationMenuItem",
+            "LuaUIParticle",
+            "LuaUIInputField",
+            "LuaUIInputFieldMesh",
+            "LuaUILinkTextMesh",
+            "LuaUIChatEmojiItem",
+            "LuaUIChatTextBlock",
+            "LuaUIVoiceDriver",
+            "LuaUIMultipleProgressBar",
+            "LuaUISlider",
+            "LuaUIRoller",
+            "LuaUIRollerItem",
+            "LuaUIRotateModel",
 
-                "EntityLuaBase",
-                "EntityCreature",
-                "EntityPlayer",
-                "EntityBillboard",
-                "EntityStatic",
-                "EntityDropItems",
-                "PosPointingArrow",
-                "EntityPointingArrow",
-                "PosBubbleDialog",
-                "EntityBubbleDialog",
-                "GameObjectPoolManager",
-                "ServerProxyFacade",
-                "XResourceDownloadProgress",
-                "XMapPathPoint",
-                "XLowHPContainer",
+            "SortOrderedRenderAgent",
 
-                "LuaTween",
-                "LuaUIRawImage",
-                "LuaUIDial",
-                "LuaUIGridLayoutGroup",
-                "LuaUIGridLayoutGroupItem",
-                "LuaUILayoutElement",
-                "XCutoutAdapter",
-                "XDamageHandler",
-                "XAutoCombat",
-                "XPhoto",
-                "X3DGroup",
-                "X3DGroupItem",
+            "Locater",
+            "Resizer",
+            "Rotator",
+            "XArtNumber",
+            "XButtonHitArea",
+            "XInvisibleButton",
+            "XImageUpgradeFilling",
+            "XImageFilling",
+            "XImageScaleFilling",
+            "XImageScaling",
+            "XImageFloat",
+            "XImageFollow",
+            "XImageFlowLight",
+            "XImageTweenAlpha",
+            "XImageTweenColor",
+            "XGameObjectTweenPosition",
+            "XGameObjectTweenScale",
+            "XGameObjectTweenRotation",
+            "XGameObjectComplexIcon",
+            "XGameObjectTweenSizeDelta",
+            "XCanvasGroupTweenAlpha",
+            "XContainerRotator",
+            "XScreenShot",
+            "XIntroduceBoss",
+            "XIntroduceNormal",
+            "XUILine",
+            "XIconAnim",
+            "XIconAnimOnce",
+            "ActorModelComponent",
+            "EquipModelComponent",
+            "PathModelComponent",
+            "PlayerModelComponent",
+            "XSkillDragContainer",
+            "XImageChanger",
+            "XLogoImage",
+            "XHPBar",
+            "XStickControl",
+
+            "EntityLuaBase",
+            "EntityCreature",
+            "EntityPlayer",
+            "EntityBillboard",
+            "EntityStatic",
+            "EntityDropItems",
+            "PosPointingArrow",
+            "EntityPointingArrow",
+            "PosBubbleDialog",
+            "EntityBubbleDialog",
+            "GameObjectPoolManager",
+            "ServerProxyFacade",
+            "XResourceDownloadProgress",
+            "XMapPathPoint",
+            "XLowHPContainer",
+
+            "LuaTween",
+            "LuaUIRawImage",
+            "LuaUIDial",
+            "LuaUIGridLayoutGroup",
+            "LuaUIGridLayoutGroupItem",
+            "LuaUILayoutElement",
+            "XCutoutAdapter",
+            "XDamageHandler",
+            "XAutoCombat",
+            "XPhoto",
+            "X3DGroup",
+            "X3DGroupItem",
 
         };
 
