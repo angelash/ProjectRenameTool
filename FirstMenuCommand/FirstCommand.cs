@@ -104,7 +104,6 @@ namespace FirstMenuCommand
             foreach (ProjectItem pi in item.ProjectItems)
             {
                 var path = GetFileNames(pi);
-                sb += pi.Name + " files: " + path + "\n";
                 if (pi.Name.EndsWith(".cs") && path.Contains(@"\GameCode\GameMain\GameMain\"))
                 {
                     if (controlType == ControlType.OpenFile)
@@ -115,6 +114,7 @@ namespace FirstMenuCommand
                     }
                     else if (controlType == ControlType.RenameClass)
                     {
+                        sb += pi.Name + " files: " + path + "\n";
                         foreach (CodeElement code in pi.FileCodeModel.CodeElements)
                         {
                             GetCodeElements(code);
@@ -210,6 +210,7 @@ namespace FirstMenuCommand
         List<string> whiteList = new List<string>()
         {
 
+                "XBaseScrollRect",
                 "XScrollRect",
                 "ModelDragComponent",
                 "ActModelComponent",
