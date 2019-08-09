@@ -80,7 +80,7 @@ namespace Template.AddNewItemWizard
                 {
                     projectNames.Add(project.Name);
                 }
-                if ((projectNames.Contains("ThirdPartyPlugins")))
+                if ((projectNames.Contains("DevProject.CSharp.Plugins")))
                     return dte;
             }
             return null;

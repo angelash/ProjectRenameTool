@@ -107,9 +107,10 @@ namespace FirstMenuCommand
             foreach (ProjectItem pi in item.ProjectItems)
             {
                 var path = GetFileNames(pi);
-                if (pi.Name.EndsWith(".cs") && (path.Contains(@"\GameCode\GameMain\GameMain\") || path.Contains(@"\GameCode\MogoEngine\MogoEngine\")
-                    || path.Contains(@"\GameCode\GameResource\GameResource\") || path.Contains(@"\GameCode\ACTSystem\ACTSystem\")
-                     || path.Contains(@"\GameCode\GameLoader\GameLoader\") || path.Contains(@"\GameCode\SerializableData\SerializableData\")))
+                if (pi.Name.EndsWith(".cs") && (path.Contains(@"\Scripts\GameMain\") || path.Contains(@"\Scripts\MogoEngine\")
+                    || path.Contains(@"\Scripts\GameResource\") || path.Contains(@"\Scripts\ACTSystem\")
+                      || path.Contains(@"\Scripts\SerializableData\")))//|| path.Contains(@"\GameCode\GameLoader\GameLoader\")
+
                 {
                     if (controlType == ControlType.OpenFile)
                     {
@@ -125,7 +126,7 @@ namespace FirstMenuCommand
                     {
                         if (!hasHandleFileRenameClass.Contains(path))
                         {
-                            sb += pi.Name + " files: " + path + "\n";
+                            //sb += pi.Name + " files: " + path + "\n";
                             foreach (CodeElement code in pi.FileCodeModel.CodeElements)
                             {
                                 GetCodeElements(code);
@@ -157,7 +158,7 @@ namespace FirstMenuCommand
 
                         var replacement = string.Format("alien{0}{1}alien{2}", one, code.Name.Insert(code.Name.Length / 2, alien2), three);
                         code2.RenameSymbol(replacement);
-                        sb += ("    " + code.Name + " " + code.IsCodeType + " " + code.Kind + "\n");
+                        //sb += ("    " + code.Name + " " + code.IsCodeType + " " + code.Kind + "\n");
                     }
                 }
                 catch (Exception ex)
