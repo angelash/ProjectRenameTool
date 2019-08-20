@@ -113,9 +113,10 @@ namespace FirstMenuCommand
                     //(path.Contains(@"\Scripts\GameMain\") || path.Contains(@"\Scripts\MogoEngine\")
                     //|| path.Contains(@"\Scripts\GameResource\") || path.Contains(@"\Scripts\ACTSystem\")
                     //|| path.Contains(@"\Scripts\SerializableData\")//|| path.Contains(@"\Scripts\GameLoader\")
-                    (path.Contains(@"GameCode\GameMain\GameMain\")// || path.Contains(@"GameCode\MogoEngine\MogoEngine\")
-                                                                  //|| path.Contains(@"GameCode\GameResource\GameResource\") || path.Contains(@"GameCode\ACTSystem\ACTSystem\")
-                                                                  //|| path.Contains(@"GameCode\SerializableData\SerializableData\")//|| path.Contains(@"\GameCode\GameLoader\GameLoader\")
+                    (
+                    path.Contains(@"GameCode\GameMain\GameMain\") || path.Contains(@"GameCode\MogoEngine\MogoEngine\")
+                    || path.Contains(@"GameCode\GameResource\GameResource\")// || path.Contains(@"GameCode\ACTSystem\ACTSystem\")
+                    || path.Contains(@"GameCode\SerializableData\SerializableData\")//|| path.Contains(@"\GameCode\GameLoader\GameLoader\")
                       ))
                 {
                     if (controlType == ControlType.OpenFile)
@@ -137,39 +138,66 @@ namespace FirstMenuCommand
                         {
                             var content = "";
                             //sb += pi.Name + " files: " + path + "\n";
-                            if (path.Contains("InspectingCamera"))
+                            //if (path.Contains("ACTSystemAdapter"))
+                            //{
+                            foreach (CodeElement code in pi.FileCodeModel.CodeElements)
                             {
-                                foreach (CodeElement code in pi.FileCodeModel.CodeElements)
-                                {
-                                    content += RenameClasses(code);
-                                    content += RenameAttrs(code);
-                                    content += RenameMethods(code);
-                                }
-
-                                Console.WriteLine(content);
-
-                                pi.Save();
-                                hasHandleFileRenameClass.Add(path);
+                                content += RenameClasses(code);
+                                content += RenameAttrs(code);
+                                content += RenameMethods(code);
                             }
+
+                            Console.WriteLine(content);
+
+                            pi.Save();
+                            hasHandleFileRenameClass.Add(path);
                         }
+                        //}
                     }
                 }
-                Debug.WriteLine("   " + pi.Name + " " + (index++) + "/" + projCount);
+                try
+                {
+                    Debug.WriteLine("   " + pi.Name + " " + (index++) + "/" + projCount);
+                }
+                catch { }
                 GetProjectItems(pi, controlType);
             }
         }
 
+        private HashSet<string> hasHandleClasses = new HashSet<string>();
+
         private string RenameClasses(CodeElement item)
         {
+            try
+            {
+                if (hasHandleClasses.Contains(item.Name))
+                    return "";
+                if (item.Name.Contains("alien"))
+                    return "";
+            }
+            catch
+            {
+                return "";
+            }
+
             //var sb = new StringBuilder();
             RenameClass(item);
-            Debug.WriteLine("   " + item.Name + " current");
+            try
+            {
+                Debug.WriteLine("   " + item.Name + " current");
+                //hasHandleClasses.Add(item.Name);
+            }
+            catch { }
             var projCount = item.Children.Count;
             var index = 0;
             foreach (CodeElement code in item.Children)
             {
                 var res = RenameClass(code);
-                Debug.WriteLine("   " + code.Name + " " + (index++) + "/" + projCount);
+                try
+                {
+                    Debug.WriteLine("   " + code.Name + " " + (index++) + "/" + projCount);
+                }
+                catch { }
                 //sb.AppendLine(res);
             }
             //return sb.ToString();
@@ -183,6 +211,11 @@ namespace FirstMenuCommand
             {
                 if (item.Kind == vsCMElement.vsCMElementClass)
                 {
+                    //if (item.Name.Contains("ACTRuntimeSoundPlayer"))
+                    //{
+                    //}
+                    if (hasHandleClasses.Contains(item.Name))
+                        return "";
                     if (whiteList.Contains(item.Name))
                         return "";
 
@@ -194,8 +227,10 @@ namespace FirstMenuCommand
                     var alien2 = "alien" + nameCounter++;
                     var three = nameCounter++;
 
+                    hasHandleClasses.Add(item.Name);
                     var replacement = string.Format("alien{0}{1}alien{2}", one, item.Name.Insert(item.Name.Length / 2, alien2), three);
                     code2.RenameSymbol(replacement);
+                    hasHandleClasses.Add(replacement);
                     //sb += ("    " + code.Name + " " + code.IsCodeType + " " + code.Kind + "\n");
                 }
                 //sb.AppendLine(RenameClasses(item));
@@ -263,6 +298,8 @@ namespace FirstMenuCommand
 
         private string RenameMethods(CodeElement item)
         {
+            return "";
+
             //var sb = new StringBuilder();
             var res = RenameMethod(item);
             //sb.AppendLine(res);
@@ -282,7 +319,15 @@ namespace FirstMenuCommand
             {
                 if (item.Kind == vsCMElement.vsCMElementFunction)
                 {
+                    //if (item.Name == "Play")
+                    //{
+
+                    //}
+
                     if (methodWhiteList.Contains(item.Name) || item.Name.Contains("alien"))
+                        return "";
+                    CodeFunction2 code3 = item as CodeFunction2;
+                    if (code3.OverrideKind == vsCMOverrideKind.vsCMOverrideKindOverride || code3.OverrideKind == vsCMOverrideKind.vsCMOverrideKindNew)
                         return "";
                     CodeElement2 code2 = item as CodeElement2;
                     var one = nameCounter++;
@@ -359,9 +404,9 @@ namespace FirstMenuCommand
             var time = sw.ElapsedMilliseconds / 1000;
             var min = time / 60;
             //Debug.WriteLine(s);
-            Debug.WriteLine(nameCounter);
-            Debug.WriteLine(time);
-            Debug.WriteLine(min);
+            Debug.WriteLine("nameCounter: " + nameCounter);
+            Debug.WriteLine("second: " + time);
+            Debug.WriteLine("min: " + min);
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title = "FirstCommand";
 
