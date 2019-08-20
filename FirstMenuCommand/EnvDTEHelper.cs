@@ -15,28 +15,28 @@ namespace Template.AddNewItemWizard
     class EnvDTEHelper
     {
 
-        public static void AddFilesToProject(string projectName, List<string> files)
-        {
-            try
-            {
-                DTE dte = GetIntegrityServiceInstance();
-                if (dte != null)
-                {
-                    foreach (EnvDTE.Project item in dte.Solution.Projects)
-                    {
-                        if (item.Name.Contains(projectName))
-                        {
-                            foreach (string file in files)
-                                item.ProjectItems.AddFromFile(file);
-                            item.Save();
-                        }
-                    }
-                }
-            }
-            finally
-            {
-            }
-        }
+        //public static void AddFilesToProject(string projectName, List<string> files)
+        //{
+        //    try
+        //    {
+        //        DTE dte = GetIntegrityServiceInstance();
+        //        if (dte != null)
+        //        {
+        //            foreach (EnvDTE.Project item in dte.Solution.Projects)
+        //            {
+        //                if (item.Name.Contains(projectName))
+        //                {
+        //                    foreach (string file in files)
+        //                        item.ProjectItems.AddFromFile(file);
+        //                    item.Save();
+        //                }
+        //            }
+        //        }
+        //    }
+        //    finally
+        //    {
+        //    }
+        //}
 
         //public static void AddProjectReferences(string projectName, Dictionary<string, string> references)
         //{
@@ -67,7 +67,7 @@ namespace Template.AddNewItemWizard
         //    }
         //}
 
-        public static DTE GetIntegrityServiceInstance()
+        public static DTE GetIntegrityServiceInstance(string projectName)
         {
             List<string> projectNames = new List<string>();
             IEnumerable<DTE> dtes = GetAllInstances();
@@ -80,7 +80,7 @@ namespace Template.AddNewItemWizard
                 {
                     projectNames.Add(project.Name);
                 }
-                if ((projectNames.Contains("DevProject.CSharp.Plugins")))
+                if ((projectNames.Contains(projectName)))
                     return dte;
             }
             return null;

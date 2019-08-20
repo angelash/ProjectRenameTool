@@ -89,7 +89,7 @@ namespace FirstMenuCommand
             Instance = new FirstCommand(package);
         }
 
-        private string sb = "";
+        //private string sb = "";
         private string except = "";
         private int nameCounter = 0;
 
@@ -104,12 +104,18 @@ namespace FirstMenuCommand
 
         private void GetProjectItems(ProjectItem item, ControlType controlType)
         {
+            var projCount = item.ProjectItems.Count;
+            var index = 0;
             foreach (ProjectItem pi in item.ProjectItems)
             {
                 var path = GetFileNames(pi);
-                if (pi.Name.EndsWith(".cs") && (path.Contains(@"\Scripts\GameMain\")// || path.Contains(@"\Scripts\MogoEngine\")
-                                                                                    // || path.Contains(@"\Scripts\GameResource\")// || path.Contains(@"\Scripts\ACTSystem\")
-                                                                                    //|| path.Contains(@"\Scripts\SerializableData\")//|| path.Contains(@"\GameCode\GameLoader\GameLoader\")
+                if (pi.Name.EndsWith(".cs") &&
+                    //(path.Contains(@"\Scripts\GameMain\") || path.Contains(@"\Scripts\MogoEngine\")
+                    //|| path.Contains(@"\Scripts\GameResource\") || path.Contains(@"\Scripts\ACTSystem\")
+                    //|| path.Contains(@"\Scripts\SerializableData\")//|| path.Contains(@"\Scripts\GameLoader\")
+                    (path.Contains(@"GameCode\GameMain\GameMain\")// || path.Contains(@"GameCode\MogoEngine\MogoEngine\")
+                                                                  //|| path.Contains(@"GameCode\GameResource\GameResource\") || path.Contains(@"GameCode\ACTSystem\ACTSystem\")
+                                                                  //|| path.Contains(@"GameCode\SerializableData\SerializableData\")//|| path.Contains(@"\GameCode\GameLoader\GameLoader\")
                       ))
                 {
                     if (controlType == ControlType.OpenFile)
@@ -131,41 +137,48 @@ namespace FirstMenuCommand
                         {
                             var content = "";
                             //sb += pi.Name + " files: " + path + "\n";
-                            //if (path.Contains("VideoManager"))
-                            //{
-                            foreach (CodeElement code in pi.FileCodeModel.CodeElements)
+                            if (path.Contains("InspectingCamera"))
                             {
-                                content += RenameClasses(code);
-                                content += RenameAttrs(code);
-                                content += RenameMethods(code);
+                                foreach (CodeElement code in pi.FileCodeModel.CodeElements)
+                                {
+                                    content += RenameClasses(code);
+                                    content += RenameAttrs(code);
+                                    content += RenameMethods(code);
+                                }
+
+                                Console.WriteLine(content);
+
+                                pi.Save();
+                                hasHandleFileRenameClass.Add(path);
                             }
-
-                            Console.WriteLine(content);
-
-                            pi.Save();
-                            hasHandleFileRenameClass.Add(path);
-                            //}
                         }
                     }
                 }
+                Debug.WriteLine("   " + pi.Name + " " + (index++) + "/" + projCount);
                 GetProjectItems(pi, controlType);
             }
         }
 
         private string RenameClasses(CodeElement item)
         {
-            var sb = new StringBuilder();
+            //var sb = new StringBuilder();
             RenameClass(item);
+            Debug.WriteLine("   " + item.Name + " current");
+            var projCount = item.Children.Count;
+            var index = 0;
             foreach (CodeElement code in item.Children)
             {
-                sb.AppendLine(RenameClass(code));
+                var res = RenameClass(code);
+                Debug.WriteLine("   " + code.Name + " " + (index++) + "/" + projCount);
+                //sb.AppendLine(res);
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string RenameClass(CodeElement item)
         {
-            var sb = new StringBuilder();
+            //var sb = new StringBuilder();
             try
             {
                 if (item.Kind == vsCMElement.vsCMElementClass)
@@ -186,32 +199,38 @@ namespace FirstMenuCommand
                     //sb += ("    " + code.Name + " " + code.IsCodeType + " " + code.Kind + "\n");
                 }
                 //sb.AppendLine(RenameClasses(item));
-                sb.AppendLine(RenameAttrs(item));
-                sb.AppendLine(RenameMethods(item));
+                var resAttrs = RenameAttrs(item);
+                var resMethods = RenameMethods(item);
+                //sb.AppendLine(resAttrs);
+                //sb.AppendLine(resMethods);
 
-                sb.AppendLine(item.Name + " " + item.Kind);
+                //sb.AppendLine(item.Name + " " + item.Kind);
             }
             catch (Exception ex)
             {
                 except += " error: " + ex.Message + "\n";// item.Name + 
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string RenameAttrs(CodeElement item)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine(RenameAttr(item));
+            //var sb = new StringBuilder();
+            var res = RenameAttr(item);
+            //sb.AppendLine(res);
             foreach (CodeElement code in item.Children)
             {
-                sb.AppendLine(RenameAttr(code));
+                var res1 = RenameAttr(code);
+                //sb.AppendLine(res1);
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string RenameAttr(CodeElement item)
         {
-            var sb = new StringBuilder();
+            //var sb = new StringBuilder();
             try
             {
                 if (item.Kind == vsCMElement.vsCMElementVariable || item.Kind == vsCMElement.vsCMElementParameter || item.Kind == vsCMElement.vsCMElementProperty)
@@ -232,29 +251,33 @@ namespace FirstMenuCommand
 
                 }
 
-                sb.AppendLine(item.Name + " " + item.Kind);
+                //sb.AppendLine(item.Name + " " + item.Kind);
             }
             catch (Exception ex)
             {
                 except += " error: " + ex.Message + "\n";//item.Name + 
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string RenameMethods(CodeElement item)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine(RenameMethod(item));
+            //var sb = new StringBuilder();
+            var res = RenameMethod(item);
+            //sb.AppendLine(res);
             foreach (CodeElement code in item.Children)
             {
-                sb.AppendLine(RenameMethod(code));
+                var res1 = RenameMethod(code);
+                //sb.AppendLine(res1);
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string RenameMethod(CodeElement item)
         {
-            var sb = new StringBuilder();
+            //var sb = new StringBuilder();
             try
             {
                 if (item.Kind == vsCMElement.vsCMElementFunction)
@@ -275,13 +298,14 @@ namespace FirstMenuCommand
 
                 }
 
-                sb.AppendLine(item.Name + " " + item.Kind);
+                //sb.AppendLine(item.Name + " " + item.Kind);
             }
             catch (Exception ex)
             {
                 except += " error: " + ex.Message + "\n";//item.Name + 
             }
-            return sb.ToString();
+            //return sb.ToString();
+            return "";
         }
 
         private string GetFileNames(ProjectItem item)
@@ -308,30 +332,36 @@ namespace FirstMenuCommand
             hasHandleFileRenameClass.Clear();
             var sw = new Stopwatch();
             sw.Start();
-            var dte = Template.AddNewItemWizard.EnvDTEHelper.GetIntegrityServiceInstance();
+            //var dte = Template.AddNewItemWizard.EnvDTEHelper.GetIntegrityServiceInstance("DevProject.CSharp.Plugins");
+            var dte = Template.AddNewItemWizard.EnvDTEHelper.GetIntegrityServiceInstance("ThirdPartyPlugins");
 
             foreach (Project item in dte.Solution.Projects)
             {
+                var projCount = item.ProjectItems.Count;
+                var index = 0;
                 foreach (ProjectItem pi in item.ProjectItems)
                 {
                     GetProjectItems(pi, ControlType.OpenFile);
+                    Debug.WriteLine(pi.Name + " " + (index++) + "/" + projCount);
                 }
             }
             foreach (Project item in dte.Solution.Projects)
             {
+                var projCount = item.ProjectItems.Count;
+                var index = 0;
                 foreach (ProjectItem pi in item.ProjectItems)
                 {
                     GetProjectItems(pi, ControlType.RenameClass);
+                    Debug.WriteLine(pi.Name + " " + (index++) + "/" + projCount);
                 }
             }
-            var s = sb.ToString();
+            //var s = sb.ToString();
             var time = sw.ElapsedMilliseconds / 1000;
             var min = time / 60;
-            Console.WriteLine(s);
-            Console.WriteLine(nameCounter);
-            Console.WriteLine(time);
-            Console.WriteLine(min);
-
+            //Debug.WriteLine(s);
+            Debug.WriteLine(nameCounter);
+            Debug.WriteLine(time);
+            Debug.WriteLine(min);
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title = "FirstCommand";
 
